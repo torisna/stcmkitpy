@@ -1,0 +1,136 @@
+Metadata-Version: 2.4
+Name: stcmkitpy
+Version: 0.1.0
+Summary: Tools for STCM preprocessing and conversion using IGRF.
+Author-email: Hiroaki Koge <koge.h@aist.go.jp>
+License: MIT
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: datetime>=5.5
+Requires-Dist: geopy>=2.4.1
+Requires-Dist: matplotlib>=3.10.1
+Requires-Dist: netcdf4>=1.7.2
+Requires-Dist: numpy>=2.2.4
+Requires-Dist: pandas>=2.2.3
+Requires-Dist: plotly>=6.0.1
+Requires-Dist: ppigrf>=2.1.0
+Requires-Dist: scikit-learn>=1.6.1
+Requires-Dist: scipy>=1.15.2
+Requires-Dist: xarray>=2025.3.1
+
+# stcmkitpy
+
+**stcmkitpy** is a lightweight Python implementation of the STCM (Shipboard Three Component Magnetometer) data processor, based on:
+
+> Korenaga, J., *Comprehensive analysis of marine magnetic anomalies*, J. Geophys. Res., 100, 365–378, 1995.  
+> [https://doi.org/10.1029/94JB02381](https://doi.org/10.1029/94JB02381)
+
+
+---
+
+## 🔧 Features
+
+- ✅ **Pure Python implementation**  
+  No need to compile Fortran-based IGRF libraries
+
+- ✅ **Quaternion-based orientation transformation**  
+- ✅ **Low-pass filtering and resampling**  
+- ✅ **Float-based data handling**  
+  Eliminates reliance on fixed-width integer text I/O, improves clarity and unit handling
+- ✅ **Simple anomaly computation**  
+  Magnetic anomalies (Δn, Δe, Δd, Δt) can be computed in just a few lines of code
+- ✅ **Standardized output format**  
+  Easy-to-parse output including raw field, IGRF, and anomaly values
+
+## Install
+```
+git clone https://github.com/torisna/stcmkitpy.git  
+cd stcmkitpy  
+pip install .
+```
+## Install in google colab
+```
+!git clone https://github.com/torisna/stcmkitpy.git
+%cd stcmkitpy
+!pip install .
+```
+## How to use  (Quick Example)
+You can run the processing in three simple steps by editing just a few variables in `run-stcm.py`:  
+- 1. `folder` — path to figure-8 calibration data  
+- 2. `outname` — name for the output coefficient set  
+- 3. `line_folder`, `coeff_fn`, `intercept_fn` — for applying corrections to survey lines  
+  
+Then simply change directory `input_dir`, then run (IF YOU USE STCM-AORI):
+```
+python3 run-ascii2stcm.py
+```
+then 
+```
+python3 run-stcm.py  
+```
+This will process the example data in ./test_data/8figures using the default settings.  
+Make sure your Python environment has the required dependencies (see below **License Compatibility**).  
+  
+
+### Step 1. Preparation for Coefficient Calculation
+This step prepares the preprocessed files for the correction coefficient calculation.  
+Equivalent to the functionality in `calc_coeff_prep`.  
+`folder = "./test_data/8figures"`  
+Folder containing `.stcm` text files with figure-8 calibration survey data.
+
+### Step 2. Coefficient Calculation
+This step merges the `.prep` files and performs least-squares fitting to estimate correction coefficients.  
+`outname = "G_SW24"`  
+specifies the survey name, which is used as the filename prefix for output.  
+Outputs include two `.npy` files: one for the 3x3 coefficient matrix and one for the intercept vector.  
+R² scores are printed to assess the accuracy of the correction against the IGRF model.  
+A diagnostic plot (Plotly figure `.html`) is also saved.
+
+### Step 3. Apply the Correction Coefficients
+Magnetic anomaly data (X, Y, Z components and total field) are calculated for each survey line.  
+The `line_folder` should contain `.stcm` text files representing the measurement lines.  
+`coeff_fn` and `intercept_fn` are the paths to the .npy files calculated in step 2.  
+The converter applies optional low-pass filtering and resampling during the transformation.  
+
+## File Format
+- STCM (yr, mon, day, hr, min, sec, lat, lon, depth, proton, gravity, xraw, yraw, zraw, heading, roll, pitch)
+--  This is the most primitive file format in the original STCMkit (Korenaga, 1995). Original logging files must be formatted
+into this format, using a user-supplied program. You can use a dummy value (e.g., 9999) for ’depth’,
+’proton’, and ’grav’ if they were not measured.`
+
+- PREP (xraw, yraw, zraw, 1, xigrf, yigrf, zigrf)
+
+- ANM (datetime,Lat,Lon,Depth,fldx,fldy,fldz,fldt,interval,distance,igrfn,igrfe,igrfd,igrft,anmn,anme,anmd,anmt)
+> **fldx, fldy, fldz**  
+  Magnetic field vector components (in Earth coordinates), corrected for ship motion and onboard magnetization.
+
+> **fldt**  
+  Total magnetic field strength after correction.
+
+> **interval**  
+  Time-based interval – the distance between temporally adjacent data points.
+
+> **distance**  
+  Cumulative distance along the survey profile.
+
+> **igrfn, igrfe, igrfd, igrft**  
+  The expected magnetic field (north, east, down, total) from the IGRF model at the given location and time.
+
+> **anmn, anme, anmd, anmt**  
+  Magnetic anomalies (Δn, Δe, Δd, Δt), calculated as the difference between observed and IGRF field values.
+
+## License Compatibility
+This project is licensed under the MIT License.  
+The following third-party dependencies are used:  
+  
+| Package   | Version (min) | License                              |  
+|-----------|---------------|--------------------------------------|  
+| datetime  | 5.5           | Python stdlib / MIT-compatible       |  
+| geopy     | 2.4.1         | MIT                                  |  
+| numpy     | 2.2.4         | BSD 3-Clause "New" or "Revised"      |  
+| pandas    | 2.2.3         | BSD 3-Clause "New" or "Revised"      |  
+| plotly    | 6.0.1         | MIT                                  |  
+| ppigrf    | 2.1.0         | MIT                                  |  
+| scipy     | 1.15.2        | BSD 3-Clause "New" or "Revised"      |  
+
+All licenses permit use, modification, and distribution under permissive terms, making them compatible with the MIT license.  
