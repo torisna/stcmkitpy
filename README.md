@@ -3,7 +3,8 @@
 **stcmkitpy** is a lightweight Python implementation of the STCM (Shipboard Three Component Magnetometer) data processor, based on:
 
 > Korenaga, J., *Comprehensive analysis of marine magnetic anomalies*, J. Geophys. Res., 100, 365–378, 1995.  
-> [https://doi.org/10.1029/94JB02381](https://doi.org/10.1029/94JB02381)
+> [https://doi.org/10.1029/94JB02381](https://doi.org/10.1029/94JB02381)
+
 
 ---
 
@@ -26,6 +27,16 @@
 git clone https://github.com/torisna/stcmkitpy.git  
 cd stcmkitpy  
 pip install .
+```
+## Install wit uv
+```
+mkdir stcmkitpy
+cd stcmkitpy
+git clone https://github.com/torisna/stcmkitpy.git  
+cd stcmkitpy  
+uv venv
+. .venv/abin/activate
+uv pip install -r -r pyproject.toml
 ```
 ## Install in google colab
 ```
