@@ -1,9 +1,0 @@
-datetime>=5.5
-geopy>=2.4.1
-matplotlib>=3.10.1
-numpy>=2.2.4
-pandas>=2.2.3
-plotly>=6.0.1
-ppigrf>=2.1.0
-scikit-learn>=1.6.1
-scipy>=1.15.2
